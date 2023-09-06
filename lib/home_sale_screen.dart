@@ -4,6 +4,8 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:new_project_4/filter_screen.dart';
 import 'package:new_project_4/home_screen_my.dart';
 import 'package:new_project_4/pkr_screen.dart';
+import 'package:new_project_4/utils/preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Demo extends StatefulWidget {
   const Demo({super.key});
@@ -13,6 +15,66 @@ class Demo extends StatefulWidget {
 }
 
 class _DemoState extends State<Demo> {
+  String fav = 'word';
+  addfav() async {
+    var pref = await SharedPreferences.getInstance();
+    pref.getString('key');
+  }
+
+  getfav() async {
+    var pref = await SharedPreferences.getInstance();
+    var sp = pref.getString('key');
+    if (sp != null) {
+      fav = sp;
+      setState(() {});
+    }
+  }
+
+  getitems() async {
+    var data = await Prefrances.getitems();
+    if (data != null) {
+      itemdata = data;
+      setState(() {});
+    }
+  }
+
+  checkdel(name) async {
+    var isFind = false;
+    if (itemdata != null) {
+      for (var i = 0; i < itemdata.length; i++) {
+        if (itemdata[i]['name'] == name) {
+          itemdata.remove(itemdata[i]);
+          isFind = true;
+          await Prefrances.saveitemsDelete(itemdata);
+          getitems();
+          break;
+        }
+      }
+    }
+    return isFind;
+  }
+
+  @override
+  void initState() {
+    getfav();
+    getitems();
+    super.initState();
+  }
+
+  var itemdata;
+  checkfav(name) {
+    var isFind = false;
+    if (itemdata != null) {
+      for (var i = 0; i < itemdata.length; i++) {
+        if (itemdata[i]['name'] == name) {
+          isFind = true;
+          break;
+        }
+      }
+    }
+    return isFind;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,315 +146,304 @@ class _DemoState extends State<Demo> {
               ),
             ),
             Divider(),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => pkr()));
-              },
-              child: Container(
-                height: 220,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Color.fromARGB(255, 218, 216, 216)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 5.0),
-                        child: Stack(
-                          children: [
-                            Container(
-                              height: 180,
-                              // width: 120,
-                              child: Image.network(
-                                "data:image/jpeg;base64,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",
-                                fit: BoxFit.cover,
-                                //  height: 900,
-                                // width: 105,
-                              ),
+            Container(
+              height: 220,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Color.fromARGB(255, 218, 216, 216)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 5.0),
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 180,
+                            // width: 120,
+                            child: Image.network(
+                              "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAoHCBUVFBcVFRUXGBcYGxgbGxcbGxsYGxgaGhobGxobFxobIiwkIB0qIBsaJTYmKS4wMzMzGyI5PjkxPSwyMzABCwsLEA4QHRISHjIpICkyMjAwMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMv/AABEIAMIBAwMBIgACEQEDEQH/xAAbAAABBQEBAAAAAAAAAAAAAAAEAQIDBQYAB//EAEgQAAIBAgQDBAYGCAUCBgMBAAECEQADBBIhMQVBURMiYXEGMoGRobEjQlLB0fAUFVNicpKT4QeCg6Kyc9I0Q2OjwvEzRLMk/8QAGQEAAwEBAQAAAAAAAAAAAAAAAAECAwQF/8QAKREAAgIBBAEEAQQDAAAAAAAAAAECESEDEjFRQQQTMmEiFKHB8EJxkf/aAAwDAQACEQMRAD8A2K26kW3UirTwtei5HKoiC0K7sqlRakCVLmVRAqU9QalyUvZ0t1joaBS5jSkVwpAPRx1+FO7QeNRgUoWih2OL+dIWqRUFSCKmxkAmnlKlCinVLkCQMyUzs6Oik7Pwo3BtA+zNLkPWiGWkyU9wUVfFcAL9trTE5WEHVhpzBgidJ3020NZmzwU3mQC09sWWNt+1URetZxAQajLlBIMAiBESCNz2ZruzpNJjToEwHDrVoZbdtUB3CgCfON6bxrENZstcS011hHdUwYnUzygTyo8GKetw+FJ/QHiXEsJfx1xmCOMVkQ9nOVXQfXAKxmC5ZEjqBvR+E/w+xyA2vooYqRdJzhAFbMMpEmTlG2+vKvUE4YgxDYjXOyhYkZRHMDeY03o1jWK003bLjNpUeFcX9GexIw4Y3cUCXyqpCNbyggKdyRDHkInnEgY/g9yzdy3ciGA2plATDZS3KAY056a716vxX0Ot3sRcum469oEkrlzSJzBTGgICdTWc9NuBXbaB0yPaQnQ+uMyqsn+WZXnrFZz02k2hKuzGce4h+lXme4qhmCgsCSoZdCU1JK5YEGeft0GG4yyZLdtUdLFu22ZVBhspOXN9rOS5n6yr0rL4biF20WRFUNEyQD4iDqD/AG3qfgmKutcDZM6ue+qnswykjNLL6uvPntzrJSlyVastLPGbL3VcIuUNmuAr2rXCTJP0hJGkDfedTNbH0lx9o27S3CURhOUx2gXLMhdQGgaSx1jSsFjeFthSLgVdWDA+su7NlyzsNN+Qnz0f65fEWyWt5lFtkVJJIuEgKxeJgAA7zoeVVCbi2m+SbzYd6NcNt3M15ZY2Ui3a0B+k785ix5jLII7yvJ6anhXEbV4LljOJBXTMmWQZB7wEyNqrOC8Eaxg5E9oFMIhJVzvDHRpJ3MjLGnMMJ6P8Rw63ABca647TOwJuQxI7qtEEmT6pMxPPTohJxr9xv8rtmhxPDWZiwxFxAY7oywNOWnt9tdVtkrq6cGdsCUU8LUgSnhKpszIwnjSoCJnzGs+yplSpOzqHyUiHWlipSk704JRYA+SlCUQLdJcs5lIkiRGmnxFJypYHRW47Gdl3mRymksBMEnmPvqWzjLb2zcVgyjcjWPAjeqnibWrDBXN+Akl1Z4LA6Jv6xB9gAJisdfTFC4AEIW6QcpJJ70sM2USDHPSuOXqXF1z/AALKPSsPikdDcEhVmZ02++pcHeW4uZZiSNdNq82x/F7lhgjAKB3DbDZkiZnMhOp3M+6K0/CuP23sKlu29xypzBWywT+9M9BIHTrUx9VbpjTNRlExOvTnTsteXt6SXkuB1MwSebkKDBBnXLy16VtuC+kHbkLCIealjm8YMZSZ5DrVQ9VGTp8jUky8CmlIqSK4it7KIq4U/LShadgREGuy1NSUWBCUpMtTGmGnYmiIimkVNlpezp2KgbLQnFuFpiLbW7kwwOoMFTEAirQW6UJQ2mqCjwdDcsXWRFjtAyEGYZQCNZgGFI0OndB8KssF6OvYudrfuKllQWZkVgW55AgGUE9PaOdenrj8K124jKFuW986ROZdch2MgHzrz70h4zAC3Zu2rr3BAWFIVg1vK2imRlBEQMxJBMg8jhXBrFWN9KOzxly2trR0RSltIJuIRuDsvIaxzp12y/DiLeR3YpKOtsNbDuI72nfIylYJGhJG9W/o56KWTYGIVWa60tlVzlYaFEmQDl0IOgkbRWu4XbuZCt4MWOpLZSp10yiTyA6a6wKpae52+SrS8EXBL925hw1wC2zA5cqFcoiAQG3PPaPPnU43EvbxVsW5ZfUvFQB2SgBlJUiCJM5vqjMBvFayKy/pBCX0ZXtKzDvrcQGUWSxLzInKqwJnXbcayVIzTt4JbnHbgJH6LeMEjQoR7Na6srjuLcLS4y3C7uD3mtu6oSdSQM2nj4zXVFy7HtXR6KEp4SnhacFrpbM6GhKcFpwFOAqGx0MApwWnhaWKVgD4hyiyFZz9lYn41neNcce2pFy1ctSwC3AytManRTI086v+J3+ztli2TYZsuY66CB1mvOONIlw5St98QTDarEzERqeYH5FcevqNYTFJltifSRL1ko62zCicxglgPWRYI35fCs3xP0hxL20tiRbUQPtECQO8IzcxPhtzqs/QL+o7JwBqTEaa6nTnB1od7ty3CuWyaQDqBIkR89K45SnLkjLDHY3LfedAFHdV5BM6wOgmek60Hh7724jfwI156VA+LJJRBmJ5bjoD/ajMPwdRreMsdh091VDTckXGHlljh+O5Lbp2aZ3OtzUNsZkkzOp10J2p2GtPcA9YEagqQD4cwSdI0mKrnwFy137cXV10O4BEb+2pLnGAwCi2qXF3AzL15Enr160pabXI3pPmLs9Ewy46ygLObiAATozbGJBE8gDqDJrS4HG27qyh1EZlIhlPRlOo51kfQ/HWVBe9fLXdiWLhFX7InugeHL56cYnDKxui5bl19YMDmC6aRvBnbrXXpypXYJFjFdFMs4pHXMDA6nu/OkuYy2ujXEHmwFb70XTHZa7LQN3j2EWc2ItCOrr4fiKCPpjgZC/pNuW2iSPaQIHto3rseyXRd5aTLXYe8lxQyOrA6gqQQR5ipYqlIRFlrstSZaSKdk0Ny0Pi1fIezAzbCTEeNFRSRRYGH4v6HXb1+zd7fsxbUl2UHO9yQQdx3dFG+w21oxvQvD3LiXrikXBBfIxC3HgCWA22MxEzWsikIpKKuxptcAuGwy20VEACqAAAANhHLyoXFcXsWwS1xZUxAMkn7IHM+FWNxSQY0MaHoa809NfR6+pN0FrgmS6wuXb1kHjzFZ6upKCtImTZ6LbcMoYTBAOu+vXxqo9J8DbuYe6jjL2iwXCZyMveBaNYEb7idNa87wPpDibdrIrZULTOmbbWDE+fiKrMTxO5clcxjxYnc8+VYS9XikskqdZRZW8DgkGVltkiZINxpkzuWE+4V1UzZR9k+OY6/CurL9RL6H7sj3iKcBTwtLlr0rKEC12WnAU8Ck2BS38NiVLPbuhtdLbgFT07wAI5baanyqk436Q37BkqFMRkOqalobPp3jlkKToOs6a3HdoEPZBS/LMYHmawnpNgbtzs1xOIUEycsEIsT6oA7zQRpvuOYrl1W0sWKS6AbPpDfvM4GYo7IsErOp01HqCSNvHatZ6P8Os21a4QgcE5jnVwI5yOsT1E15LxKyVbLbLNrAbKyFu9HdXcidNefxn4Jxu/Zd+zXtLjpkIaSoEghivMiDE/a9hw05PdlWKCbZ67xf0iwdqz2ty6jI4IVVyu1zqqrz8Z0E6xXlfE8bcxrkqgs4cGVXQmIiSx1k9BptvE1AuCAc3bx7S6dSNAAfGBA8hRC38zAb9FA0HkOXnXQ7fJraXAuGsJbEWx5udz5dKVvDU0UmFY6kadKmt4eATG3WiiAFLL+sCQaS/ZS4IuIJ+0BBFWK2iVYnXVfvrhblZPIge+adBZQvw64gm23aJ9kmGH58aCS4D3XLjWcjkgT1yiAfYJrS3wiRmbKeUT91VfEcdYIAuDMCfWAII8dY+FZy0k+DbT1KeUD5dpa4fNmbXTSCYLabbD31EMMmndUnbkT4gE7+Le7UiicNZtkHJcNxDtGpQayrcx7fbSOhHMEHmDod9zyUSfP2mMpQkjqjOMiFbK8kWCCNABI1kDou8tznpu4oD4z7JidfBBr8+pVc3tmPDNHXogP5n1XaA97badRmMSFA+zoNB0nQAVJoR2QyGbbvbY7FGNsnqzRAC+BHXbXJe4H0xx9re4t1P/AFFAOVRqQyxHTXU6c5ilJJgRLNBbNyUCRoNAOYB0yiToNWvrDMSwBJWTGZomRp3VAggxoBmOpWqUmuCXFPk2WN/xGutbAs4dRcbZg4dQAQJEqJnUDl5waM4L/iFmEYi1BA1a3LZiDEou7AwTpr0BmsEVMldMx9c+qFEer+73d/srp6zataCM0abWwe7rEl2+zoAx+yoVeZFV7kuyHoxPauF+kGFxMizdViPqmVb+VoMVaxXg2YN3LgBaAZIjkSA0eq8DMek+2rTA8ZxdgZLV9wqx3LgFxR4DN3lHtq4+o7RlL0/TPYyKpcZ6SYe3mGcFlgZQDqx2AO3t86zOH/xBf1buG1g99HBXbTusJ8/vrJcXvdq+dGt3LhiVVcuTeBEAzp06b0anqKX4nPOEo+D0ux6V4crNxsjjdYZuU91gNR4mNqzPGvTgsrW0t23GoMy6sCNJUgRvPsrIJetdllyTdY90Tou8gjdmOkcvvr8JxK7adzbkd0hmyzCNoc2nMiPhWL1ZyxZlbYXibdxAC4UC4MyDeQTGkcuR8oqvzhTEQTqANZ8fIVPhLdu4h+kCHUjMurECSAdhtG+8ToZqfiotrbS1bv8AbBTLIqsURogsr7MDAiBIBMwRrK07yKgHt25OKStFgMbhEtqrYK1dIn6QqJbUxPkIHsrqeyPaCj2kCnAUjkKCSQANSToABuSelZziPpzgrQMXe1YfVtA3NemYd0e0ivQlNLk2UW+DTAUteb8Q/wAR7h0sYbLr695htI+onX+Ks9xD0pxt318T2aj6tr6LXXdtX25T7NKylrJGi0Wz2DF4+1aE3biWwZgsypMbxmNYzjHpbw7tVuS99rakKLa5k7x17zQs6A78q85fsyxdmDvPrO2duemZmJ+PXUVKrDlrGmmvXaD4eXiaxlqt8I1WjHyy04x6Q3L11nt2+yBOkuCdJgFFEZpk6E70AuLuyzM+ZnglgoBgCIBHL3xG9MFt+SXDy0RzPhttp5eBmlOFunazdP8Apvy23TXzPsFZrddovZproHv3HjQT5fPy8aAw11u1VTmUmeoPqk/dVlc4Zij6ti7/ACx/yj3nXyqHB8ExCXVuXLTKi5pYlNJUjbNOpMbVvDc+TGailhllbTz3Hnv41pzbhD/l++qS3aDQB1HQDfnrFaYNbywbijb6y8vbW1HMBpb+jaOq/M1yW+5/mX5Giu0sAFTdXWD6y8vbUTYqwBAuLuCdQdp6edAFLxu33l0+qfnWW9ILfcX+L7jWt4retuwKEMAIJ0018SKpeI2c+RScstvBnYn7X30mVExIsXc8oShH1pIPsjWPhWkwaX8q5yWJIAYISWJ2HdOVj5ma0WDt4ewg+jUtzbKWJPMiTlHlS4jjrHRV0/eMj+RYAqHbRpvS4QIvBcQSh7C5pqxbsySSdtWAgDpG/tL14NiN+yAP1c9xIEnUtqcxjU9TA0UQWni9zpb/AJPxpwx987QPJF/Cs/bih+/I48CvxB7ITJbNeUltdJ7u3M9THIAVIvA70ls9gGCF+kLBdZUxl1g949WgnYCo/wBMxJ+sf5VH3Uhv4g/Xb4CntXQnrT7Jh6P3Iy9raAmTpcfMNwDtIzd49TvppUg4A2YMb9swAAOyuEQDJ3fXM3ePUjppQhe/+0f+c/jTD2vO43tuH8aKj0L3Z9h6+jYIYG+xzTmItnMZYM2rHcwAfAAUicCuZ2BukIPVbs5YzyYDQRJAiq42yd7g9r05MOR6rj2NSaXQvdl2WZ4I/LEW/bZuD5NUV3gVwxL2WjaS9sjfYxpQv0qie0cDwc/jSfp1wf8AmP7TPzpVHofuy7Ev8AugSDaaNY7QNMQQNgYkDQyPA1Y4DFvcCW2tNcuqSi2GgIFylldQqjQFyoJOmYQRJoBeKXftz4EL+FXXDsWqul4SFAKvEFghILBZB7yEBxzIBAiqikngly3cmJ46l5Lrm6htuxzFGVgGB5jNOntqus4llAykgbx7I0862/FMLbu4jtMT9HadjkuKhIuQw777tqrZ5EDwFTYTgeFt3LV25Ny1fLC3bVszoV9ViQNtSCNCJk66CNtmdGK7a74fGur0nifE7Vi69q2XVFMADD2rgEgHuuzSV106CANBXUvbj2FLs9JxNhXRkdQyMCrKdipEEHwistxD0MtaGzasjSMjLpptBg/GtfS11tJmp5vifR/EW/UwNp/4DZ/+ag1WYi/iLfrYG4gHPswVHiWS2QBXrVV3HbwTD3WIJGRgY5AgiT4CihHlv6/ucrYH+b8FFRt6S3eQH8zn5EU3EvaCk5xpHJuo8KsuE8GOJsB7VoMVeC/dXOJ1AckEwKnIkisf0iv/ALuv/U/7qj/X14/Z9x+9q0OP9EyoZlt3O6CVRQza+esjwrN4vCC3IcEP9mVIjXmNiKlyodIkfid/93+VfvpUxN1mAuSqnXVVWfIxQ+HxTr6jMv8AC7LO+8edFYYyxZiZjVmJJ3HM0KeaDbgl4lhyiMrggxPLadzBpow9sFtY1PMVb+mwAuOJOltNdPbWY4dhc4OvUydfCtGyS3tW7cN319XmV+0tNm39q2faPxpuC4N2lwWwwBgmSpjTcb0XifRw22tqbgPaNlnKdNJnfWptDIMLhhdcJbiTPPTTX31TekCQAOYYg+ya2XBuGCxirali4YMdFKjYjeTWS9IQP/cb7/D+1OxFeqGTUqpUiJRCJSooGUMPVOpgbT8657VwAFidZ+t9wNG207y+a/MU1SZua652HxPnRRIN+g3GiCdfHx8K79WufP2n2+rWiwCwqez76K4fhy7FQCTDQBG8TzIEVLYmZUcNbw9oJ+Yp/wCp3IgefPpvEVqmuZLdy2V1Zh7Cv31Eg0/yH7qWQsyl3AlGynUxvr7t6K/VUEjP89PjRfFE+k59eWuvl+FFXh329n302ADh8FlS4DGhXUCN4oS6mXlIq8xSd27/ABWviyT99DNYm3MciYoaApGvrT8HxEI37pifCNiPEULicHcuOFsozu0lUX1mgSY8QAT7K7Cej+JuJnNu4m8KVIJy+tJaApgEgNEwYM1OQLHijplVT2hlptuHLqEyAC0iMcqiYIP2SByNM4H6M3cU5C3rKmMwRmztEgGQg0Oo+FU9rEnKqyHAKssmI1J0iRIOsE6SRrNXGHuXLoyh0tm0rQFPZmNnysCJnpMankawlJXlWJ8lpivRF1dlOIwwgxrdCn2qdqSs/bbDx3rZY6yczCdekV1Rvh0LBV2bzqO41xP4GuL/APzumj7PH8Ynq4rEj/Uukf8AuI1TY7iKNmnD4XvbnsEle7Hc0gbTt161k7zKrErBBnTaBsD3SADrXXDVUuC95s7Xpzj0/wD3GP8AGtlvmiGix6dY2+OxuPaZLndaEUMQehS6R8K88XFNrBaP426zyPTSrHglx2vWwWJG/eM8jsDvrV7h7jacewfZhkkN6pmI3g7TR/oz6dJgrPYvYZwGZs6uizm1jK8D40npq83Hnpb00+ytZ/C4DDuua5duo+ui21ZYG2vaKaoaPQbH+KODcQ9q+nstuP8AZcJ+FZrG8RwV0OtpUQzKDsbyuSSM30jdz1RPvHOapG4NZO2NYDo9i5915vlS2eEWrbB0xNq4RPdFu4jGQRoWSOc+sNue1TJJ8hhljg7QLagHQfExUlru3DsBkM8h61vp5n312AHePkv/ACpUB7Rjt3SP91upivyBhfpHjlvF7igqMoEGCdNzpQHBh3G8j/yFPxwHZtr8G116xTeEDuHyP/IVclgkv+FOFxIYmBlf5mjOM4oM1rszJVyZ6EDUa+FU4EuwAB7r6Hbeaka3BG4GuomdJnvQPhtWfkoLx/FBbu2rgCuy29VkhZO8MRtWS42+YKx3LHmCNZOhnxq2xUAiWMmSZ0JkyNx0jr51U8ZjKuv1iOvI9K0isEj0WiESmIKmWnQCouq/xL8xUdsw1z/qNpr1aiE3H8S/MVBaID3Z/aN0H1m60qEW2G9W3+eRojB4g23LKASFO+2oUcvOhkPct+TfI0+e838H/wAVqJLkFyH4bi9myzG/llwCJAOoJLADxke6hC4YZhsysR5EiPnVP6TYJrhtFSoAVt5G+WNgasbAi0gPJSPdlFFIGC8UnPpG3j1PQGpMUYdvZ8jTOIgZlOUnu8hPM12Pb6R/If8AE1TAOxK928Ohtf8AJaTDAC2GOwBJ8qnxI7t7/S/5Co0SbJH7p+VOgKPg+Pt4bFWr90kJbFwsQpYwyMuy67kVe+kf+Ittka3hj3ip1uW3EncdmIOoj6wjvDXQ1ieKYYXLiW2uC2uViXIZgI1kqup2rOYjKIliZ3EMI8JaPHlWcpNYQ7LDGYo3HNxmlm8IA5RoIAgAQKJ4ZjxbcZlzqJzI0qGBkNBGswd/Cq62FgAzA05yI5dJ3pSigFpgfwkxO0E89RXG1ZBokx9sgFrIJ5kaTGm0GurPSB9v3f3rqin2GRz3lPhyg89I1oHHWF9cQBsRO502A8PHlUuJTKwObcHnrt8tBQOIfTvHl5+zWunTjTwxoEBq+9H0VrqKiszrrI1ERrHhtqetZ8VccE7VHDI7IDoxVspI6aa7jrXQuRmz4lZuG2SQxMjU6nfxqssq0RBkSY8PKjcIt52X17qGZzXXCgj1cwDAkTAqYcTx9oALhbKkkyocRECDJPnt0rShmbxN/EE/R2riqOZttJ8YYQB7KHGJxmbU3QOmUj5CthiuL4yVC2EbuqWY3BlzH1gqlgYHU0HxPjdy1bXOiG65gIhgAaAlmPiQPM0mikVNnG4gW2BJDuQqZu6RALMQWjQCB5mrD0Tt4i490OrsAqwSCynvgNlaIO3I1WYjiJcBtBInUSfbNT8F4jcL5BduBQNFV2Uc+SxQlTBmpx+CuC2/cYbfVYA6+VQcMUqkERodNvrDlQWMxNzIZuXTtvcc8x1NRYHiIVQGLkydZnnO5NOSsVGlwWJZLmdFDHUQTAg5QTPgDNE4niNyQwAZkMqpKgE+JG1Zy1xZAZhufIc4/e8KmPGLf2W9w/GsJ6cnJNcD8FrinvX4drUQCIWWG87qTVNxvB3Aqkow73NWHI+Fdc4gbkdm1xAJ0DMu/gpqs4liHBSblwiZgux2jqa1imoq+SaLlLZohLRrIC4/27n87fjTxdf9pc/nf8asdGwWy+6iSIPXY+FT/o1y4dbeXUmVtkSTGpg/nWsVbvXJH0twT/6j/jRtp3/aXf6j/jSFRsLVu+oAFsQJ9ZST5CnzfH/lj2Iax+Z/2t3+o/412Z/2t3+o/wCNAqNkGv8AO3/snl56VzfpHJAPNdPOJ8qxuZ/2t3+o/wCNdmf9rd/qP+NAUanEcPu3GDMh6aCPu86LRcRoOzkbeoOmk61jQz/tLv8AUf8AGn5rn7S5/Uf8aAo3WAwrN2huLBYLoVgGJjen3cGAhGgWDzAgVgWe5+1u/wBR/wAajuX7gGt67H/UufjQFEXpDbK3lyNmAU6rB05jSeVVSshuA3FBGntAB2PmZ9ldfw91rilQxUHWWj2941W48XFfnHt665hyNYSzwwotV4coe6SYtKQyiYLZtAJ99QOnZjvsAeSDWAdRm9nLehX4iy5QBJEH/t+ZqW3iGPezFZ3k6n8+FZuPYbWFI5jRW+NdSqz9fexn211Y7F0FMEuYMxnYOFOYjQgb6ifDwqO5gVlZG+wJK/P4dYFGG/HeYywmJOkxrpUuG4lDAhypkaFxDCeWndOp3ka1rFsx3tlc1kSStob6ArpO+k6bctulS2LdyJUAEfV0nadVGsaakDSrTieUgFA7NA01aQ20DkQIP3a0Pawl4hsti/yKgW2I6mWjfaDHWeVVb8DuQjX3QK0uzRORLpVYB0zLEa/fSYfFXiQzC+ozaA3ydByJiYrv1PiyR9BdAHLLGu/un5Vb8O4TiVMtaA88oB56qNjOk9K0U5FqUugFsaHeS95ZOwud0eQy7UJxEi44ctEAJG+hkliRAnbSNxyirJvR2+WOtoAkGCVIHy030Eb0r+izsZa7bGsgAIQPablLfIPzKb9FYg8zrMT4mdhpUnDrq2nz6nkVOnX+1X2F4AEmb41BGjWxAP8AnND3uDYcaNfuHWYBDanQ+oh/MUOb7HUgvAcRW6swAelHIB0qvsJYtrCuSOkXPvApTjUHJv5fxerWrFLLNF9liQPCkMdBVS/EG+qmnjI++oXx1zkoHvP30e/ELRb3biryEnYaankPeaqrlwuA9xcqywAUqegnURHIk7aUI7uzBm1I20gc+U/OkzN3QQcqkMF8REakHTnFRLVTIlbCruHtqGkgBVnMpzZgNzqsjXSRp5zQz2iEzkiNDEiYO2o0NR3JLM4DKzAAkMYgbjL0O8TUeIRnXKFVRoO7pEbkA8z91StWvIlaFw18E5tAo1OoDEaTkXmdad+siDEAHxOvuoJuHNprtz51K+GukQbkju9Y7uiiJ5a0PU+xPd2ENjLmZxmSQdAJYEQD3WURtrr0NRtxFgVOYFSZgDXpBGnnodqiXB3NYeJESB19u1S4fC3Lc6oZA0IkAicrQZBIkiDI18Kl6n2KmSpjLmogsSTAiGA3EiN6cMe0he6WMEBdZn6pjZtNtdxQa4S4vq3PAwTqDGh9oB9ld+i3DGZgcsxpJJJmWO5p+4+wqQfbx7aApLZisKCToSNuunwqd+IgCSDtI1GomNNfBvdVUcPcHqtB2klto20gb607B8JuvosNG5GnKBqYprUfYLcWY4knjvG3UwI6zv7RXXboYCD92/gfz8aFX0fvg+qeW0cukN5e4VFicDeQZXtuZMzG58ablKWBrd5DXcBZDEGJmQCddPZyiddKpu3dmzZtjr7N9fzpSnD3oj6SNtFbbw9w9wpyYG4dOzuHaSUY68ztSUKKor3IVzHUEcjPhvUyWmkZkukc4Eb6+Z5itBhuGWCVt3X7MQWZ+zbPoCREx0jpWxs8EtHCm+mKBVAAQbTAzAgaPz01AiNaq/BojzsOv7G5/u/CurV9tb/ap7j+NdU0hUVfCEth7a3FBVzl7QorKGkblwdORjbNPLUu/wASe1ce39CGVmBFu2hGhO3cmPE1S4LE3bMnIH7yKbbjQKwkMB64YKfWGkETuJiwF5u8SrtcJJP1RJJJ7p28zWG1pt3gz4VF+nGbh+ra9tu2T8Fpf10/7Oyf9JPwoBLZ3bfpoAPZzqXITy+VG+XY1IL/AF7c/Z2f6YFRXOMXTzy/wgCoGteA9396Tsx0oc32PcP/AFhd/a3f6j/jUT4hjuzt5sT867IB+da5kFTYWiM3T0Nd2h/Jp+QeHupyov50pE2RZm/JrgzVMB5+8U4W56e8UBYOc/h7qQh+o/loo2o3IHxpsL5+6iwsiQt4e6n68vlT1uDw91J2hPMUANCHw+X31xWOn59lNd2HOajF1ulFATK68x8f7UuccoqPtD0prP1B/PsooKJmM8/nSFfA0MX19WnkjofjRQUShAeU+78aaEX7NMW54U72fGaAoUov2fjXdmv2aXL4VxQ9KBpDrBVGDKokfaVWHuYEUTcxbNoy2v6Vv/soJlPj8a45upqlJrhjHOoOyW/6af8AbT7RVRrbtn/TT8Khk0jT/wDVPfLseQ9Mag2tWfbbFafG+md1jayAL3EldYLNIbY+rMQDWIIq84Dwc4pwqXktuqK4zAnMFZpKxzG//wBVnJybQm34KvGqBccLAAdgANhBI0rqg4o6recLmcA6NBGb96D13rqmyd5Ji8Qbma4xVZhVyoEWFCjQjQxKxrzoLBWHCGGDNOxlZ5ztM68/xga291lfs883TkKB4BEGVOcQQMoEeVBIly2VLKylTl17skbrm9njXVGCqjaUbyXFoYokDKiyREkn4kxRypc0UqS0xAB3HIa6mhMHjkt22XOxuEppOUDNrs8iOp3ke+e/xBraqGGUswkggkn6rTBVtRrsNQKzlFt0ZbRxdgYMgjlTlepcO4ZC76GPrd0s0bImpbzGnjUTODyA/PWs/NEji3jHspRHX4VEuXw98U5YMwJjU68qB0ycqIkMT7h86RmA5H3/AIVDCzGk8x086e2Ufn+1Fk2K10/kGmm74fA03OCdKcD1mgaEDjnSmOlNM/kUq2m8Pb+FMZ2XwP58qXJHKmEEfWE/5t6auY8x74pBRLA6UuUc59hqNQw5fGuA8KAodkXxp+nhUJt+NJHjTHROBO3y/vXZfKhhvzqTXoaVBQ+I5/H+9LHj7KYR1WlDeHxNADo8veadl8vj+FQu/gPfNIF6iKAJez8Qfb/anBBUDEUmeNp98UATFfOkYedRm74mkuXSoDAZhMbiduVAN0F2spBBEmJDQJG2+mooe3xBrb22QwAGWRAPeIEfyu1Rvi5TMATOw8SJ2+YqqF5i6IygnTICTqToPM6j3ULTeb4IlZavj2GkEaD5V1AthNTmS5mkzrznxWuqNkSLKvEYtQzAKABBkEnXQZtIEz50bhSEdWvyyM2snua8ywggyDEnY+FBWOG5gGDLLTAJI85Ea7jalxhdLLWnAYkrlYGdunTQRXd+LwjZumkHcRv27ZuqjM2ZXRVAGXLK5JI6AsZ/dFV1hVOVblwrbjuzMq3Qchtz02oTtgFTou+gM6xrPKirBts83FbLySRlEjeem21NR2obbLG5eFuLSEOtt84ugqS6lQCDHgRpO4FTtcUjPbMgHvKdp8AdNo5+2g+ImxEWMquBDIwbWDrkYnfw12oGxjhtBAMBtdO7z8Y61DhatCyarDWsxGYQCQNN2kSIHiJ5Ugv9m5TQkjumZhvPnBg+YoTEcRCqFUSRPeOunUHwM6+OlAYi9njLqwO8xoPmTXMoOXPA5SjGqeS34WFd+zLMOYIglgDNzzbLLD+GOYpuNLC41vZQzakRmVWIBE8jBNAW8QQ6NaDDI0q2wGTvHXrpJnkK4Yybha5Ll2JaGJYk6ZQ2sQIjcaRtVe3mzPFfZdvbyIpIAzeqDBLDKGLD2Mn83gagNwnQfdS43Hqli1YtutyXZgQO/byiCjhtVMuTBMa6TTAVEaszdNz7tvhSV1kpqsDvaZ8ppQzdZ+FI6zuY8DFNCeXwoCmOdz0mmdp4fCpQniB7aRV6Qfz5UBkjzjx+NKjT1/PnTsv7tJE8jTGLPUfKnT0keUVG9nXaozb8fuoHgnjxNSAHrHtoQKRsaU3T+TSoKCoMEjUDQ7xTSukldOuke+p8C2dezGX1gQDJzHmNOUD8Na63lts6lpTKCYMjfXQgED1SGHUHbWs3LkclFK7BlddgBPhM+6uLjr7Nai4lh1BOVMrgKwfNpm00aYBGWdPPprXJjwDDXM/SEBgzodNSvPcHStox3RtEX0XcMQCFkEgAycsnlImPbAoo2EW2Sw7wYx9k6eq3wPsPWBS4Xjys6gnuWwuXMoVl8QQxzAkyZg68pq6xlxrgALAxbYuxEDKe/OgMQCukfhWOopRaRjOUkwLiFrskzAC4xEgagD59RvG/Ks9jce8RsNxCnfqCTqdqZxDEkszTPQdDmgrIMxBPuHMyRMAzuw78DvaaRCjlOk7fOuvT0qVs0UJVbCLdx7adoXI2i2R3tQNTOykCZ86t/Rn0ht2sQLt1CQFfL3VZldoAcDTSJGlZjHtmcszlxoCdp0+rpty25UXaxFsB1JbJlGU7sTOwJGg1Omuk1rPTUotPyVKODaY7jQe47ratAMSQGuYgNrr3hbcLm6wN5pKwXaJ+/wD7a6sf0rM9j/qCz/4cfxj51A95jILEiDpJjbpS11arn/pq+UAp6jeY++rLD+o38P3V1dVz4HIr8Ry/hFTYUbeX4V1dTfxH4NRx3/w1g8z+jyeZ+iubmqO9v/lrq6sF4M5fJF/ZP/8Aj8hejw7tj8T76rbX/wCMfxD50tdWa/k01P8AH/RX2PU83afH1avsD6zeX3murqrV5M18ghfxoltj+eYrq6sWaMdaURtz+81A+58qWuoEMc6H+E/8aam/srq6mA1qRPz8K6uoQ/BxrjS11AhLw0A5TMeMNrVlOa02bWEaJ1jXlNJXVD4M5cgaMZxOuwtkeBzqJHs0rJ8R7txwugznQachXV1dWh8So+S44TaXKO6NbpB0GogaHwqzveofFbM+P0Zrq6o1vkiJ8me43snionx1FVKj1fL7jXV1dGn8TaPxEb1T51x9T89RS11aMbNDbwyQO4v8orq6urMyP//Z",
+                              fit: BoxFit.cover,
+                              //  height: 900,
+                              // width: 105,
                             ),
-                            Padding(
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Container(
+                                height: 20,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(5)),
+                                child: Center(
+                                    child: Text(
+                                  "Super Hot",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 10),
+                                ))),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            child: Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: Container(
                                   height: 20,
-                                  width: 50,
+                                  width: 35,
                                   decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Center(
-                                      child: Text(
-                                    "Super Hot",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 10),
-                                  ))),
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.image,
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(
+                                        width: 8,
+                                      ),
+                                      Text(
+                                        "35",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 12),
+                                      ),
+                                    ],
+                                  )),
                             ),
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Container(
-                                    height: 20,
-                                    width: 35,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0, right: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Column(
+                          // mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text("45 minutes ago",
+                                    style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 212, 206, 206),
+                                        fontSize: 10)),
+                                Spacer(),
+                                // SizedBox(
+                                //   width: 55,
+                                // ),
+                                Container(
+                                  height: 28,
+                                  //width: 65,
+                                  decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 53, 51, 51),
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Row(
                                       children: [
-                                        Icon(
-                                          Icons.image,
-                                          size: 12,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Text(
-                                          "35",
+                                        Center(
+                                            child: Text(
+                                          "TITANIUM",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 12),
+                                        )),
+                                        // SizedBox(
+                                        //   width: 20,
+                                        // ),
+                                        Center(
+                                          child: Icon(
+                                            Icons.add,
+                                            color: Colors.yellow[200],
+                                            size: 10,
+                                          ),
                                         ),
                                       ],
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0, right: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Column(
-                            // mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text("45 minutes ago",
-                                      style: TextStyle(
-                                          color: Color.fromARGB(
-                                              255, 212, 206, 206),
-                                          fontSize: 10)),
-                                  Spacer(),
-                                  // SizedBox(
-                                  //   width: 55,
-                                  // ),
-                                  Container(
-                                    height: 28,
-                                    //width: 65,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Icon(
+                                  Icons.check_box,
+                                  size: 15,
+                                  color: Colors.green,
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            Row(
+                              // mainAxisAlignment: MainAxisAlignment.start,
+                              //  crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "PKR",
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17),
+                                ),
+                                Text(
+                                  " 7.19 Crore",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              "DHA Phase 6,DHA Defence",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            Text(
+                              "House for Sale",
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                box1((Icons.bed), "5"),
+                                Spacer(),
+                                box1((Icons.shower), "6"),
+                                Spacer(),
+                                box1((Icons.crop_square), "4,500 SQ.Ft"),
+                                SizedBox(
+                                  width: 2,
+                                ),
+                                Spacer(),
+                                InkWell(
+                                    onTap: () {
+                                      getfav();
+                                      addfav();
+                                    },
+                                    child: Icon(Icons.favorite_border))
+                              ],
+                            ),
+                            SizedBox(
+                              height: 12,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 30,
                                     decoration: BoxDecoration(
-                                        color: Color.fromARGB(255, 53, 51, 51),
+                                        color: Colors.white,
+                                        border: Border.all(color: Colors.green),
                                         borderRadius: BorderRadius.circular(5)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        children: [
-                                          Center(
-                                              child: Text(
-                                            "TITANIUM",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
-                                          )),
-                                          // SizedBox(
-                                          //   width: 20,
-                                          // ),
-                                          Center(
-                                            child: Icon(
-                                              Icons.add,
-                                              color: Colors.yellow[200],
-                                              size: 10,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                    child: Center(
+                                        child: Text(
+                                      "SMS",
+                                      style: TextStyle(color: Colors.green),
+                                    )),
                                   ),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Icon(
-                                    Icons.check_box,
-                                    size: 15,
-                                    color: Colors.green,
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: 12,
-                              ),
-                              Row(
-                                // mainAxisAlignment: MainAxisAlignment.start,
-                                //  crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "PKR",
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17),
-                                  ),
-                                  Text(
-                                    " 7.19 Crore",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                "DHA Phase 6,DHA Defence",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              SizedBox(
-                                height: 12,
-                              ),
-                              Text(
-                                "House for Sale",
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Row(
-                                children: [
-                                  box1((Icons.bed), "5"),
-                                  Spacer(),
-                                  box1((Icons.shower), "6"),
-                                  Spacer(),
-                                  box1((Icons.crop_square), "4,500 SQ.Ft"),
-                                  SizedBox(
-                                    width: 2,
-                                  ),
-                                  Spacer(),
-                                  Icon(Icons.favorite_border)
-                                ],
-                              ),
-                              SizedBox(
-                                height: 12,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      height: 30,
-                                      decoration: BoxDecoration(
+                                ),
+                                SizedBox(
+                                  width: 7,
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        border: Border.all(color: Colors.green),
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.phone,
                                           color: Colors.white,
-                                          border:
-                                              Border.all(color: Colors.green),
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      child: Center(
-                                          child: Text(
-                                        "SMS",
-                                        style: TextStyle(color: Colors.green),
-                                      )),
+                                        ),
+                                        Text(
+                                          "Call",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: 7,
-                                  ),
-                                  Expanded(
-                                    child: Container(
+                                ),
+                                SizedBox(
+                                  width: 7,
+                                ),
+                                Expanded(
+                                  child: Container(
                                       height: 30,
                                       decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          border:
-                                              Border.all(color: Colors.green),
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
+                                        color: Colors.green,
+                                        border: Border.all(color: Colors.green),
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(
-                                            Icons.phone,
-                                            color: Colors.white,
-                                          ),
-                                          Text(
-                                            "Call",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
+                                          Container(
+                                            height: 20,
+                                            width: 22,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: Colors.white),
+                                                borderRadius:
+                                                    BorderRadius.circular(12)),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.phone,
+                                                  color: Colors.white,
+                                                  size: 12,
+                                                ),
+                                              ],
+                                            ),
+                                          )
                                         ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 7,
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          border:
-                                              Border.all(color: Colors.green),
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              height: 20,
-                                              width: 22,
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: Colors.white),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12)),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.phone,
-                                                    color: Colors.white,
-                                                    size: 12,
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          ],
-                                        )),
-                                  )
-                                ],
-                              )
+                                      )),
+                                )
+                              ],
+                            )
 
-                              //  Row(
-                              //   children: [
-                              //     box2(Colors.white, "SMS", Icons.message),
-                              //     box2(
-                              //       Color.fromARGB(255, 64, 145, 67),
-                              //       "Call",
-                              //       Icons.phone,
-                              //     ),
-                              //     box2(Colors.green, "whatsapp", Icons.phone)
-                              //   ],
-                              // )
-                            ],
-                          ),
+                            //  Row(
+                            //   children: [
+                            //     box2(Colors.white, "SMS", Icons.message),
+                            //     box2(
+                            //       Color.fromARGB(255, 64, 145, 67),
+                            //       "Call",
+                            //       Icons.phone,
+                            //     ),
+                            //     box2(Colors.green, "whatsapp", Icons.phone)
+                            //   ],
+                            // )
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Container(

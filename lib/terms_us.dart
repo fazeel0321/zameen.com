@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:new_project_4/image.dart';
+import 'package:new_project_4/utils/image.dart';
 
 class terms extends StatelessWidget {
   const terms({super.key});

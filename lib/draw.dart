@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:new_project_4/home_sale_screen.dart';
 import 'package:new_project_4/home_screen_my.dart';
-import 'package:new_project_4/image.dart';
+import 'package:new_project_4/utils/image.dart';
 import 'package:new_project_4/profile_screen.dart';
 
 class draw extends StatelessWidget {

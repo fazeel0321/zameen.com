@@ -2,7 +2,7 @@ import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:new_project_4/draw.dart';
-import 'package:new_project_4/image.dart';
+import 'package:new_project_4/utils/image.dart';
 import 'package:new_project_4/profile_screen.dart';
 import 'package:new_project_4/profile_screen_main.dart';
 
